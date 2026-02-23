@@ -422,47 +422,43 @@ async function loadUserInfo() {
                 });
             }
             
-            // 检查 SillyTavern 目录是否存在
-            if (data.stSetupStatus === 'completed' && data.stDirectoryExists === false) {
-                // ST 目录不存在，显示警告和重新安装按钮
-                const warningMessage = document.createElement('div');
-                warningMessage.className = 'message error';
-                warningMessage.style.marginTop = '15px';
-                warningMessage.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <span>⚠️ SillyTavern 目录不存在，需要重新安装</span>
-                        <button class="btn btn-primary btn-sm" onclick="goToSetup()" style="margin-left: 10px;">
-                            🔧 重新安装
-                        </button>
-                    </div>
-                `;
-                alternativeUrlsContainer.appendChild(warningMessage);
+            // 检查 SillyTavern 是否需要重新安装
+            if (data.stSetupStatus === 'pending' || 
+                (data.stSetupStatus === 'completed' && data.stDirectoryExists === false) ||
+                data.stSetupStatus === 'failed') {
                 
-                // 禁用启动相关按钮
-                const startBtn = document.getElementById('startBtn');
-                const restartBtn = document.getElementById('restartBtn');
-                if (startBtn) {
-                    startBtn.disabled = true;
-                    startBtn.title = 'SillyTavern 目录不存在，请重新安装';
-                }
-                if (restartBtn) {
-                    restartBtn.disabled = true;
-                    restartBtn.title = 'SillyTavern 目录不存在，请重新安装';
+                console.log('[Dashboard] 检测到需要重新安装 SillyTavern，自动跳转到版本选择页面');
+                console.log(`   状态: ${data.stSetupStatus}`);
+                console.log(`   目录存在: ${data.stDirectoryExists}`);
+                
+                // 显示跳转提示
+                showMessage('检测到需要安装或重新安装 SillyTavern，正在跳转到版本选择页面...', 'info');
+                
+                // 隐藏页面内容，显示跳转提示
+                const mainContent = document.querySelector('.dashboard-main');
+                if (mainContent) {
+                    mainContent.style.opacity = '0.5';
+                    mainContent.style.pointerEvents = 'none';
                 }
                 
-                console.warn('[Dashboard] ST目录不存在，已禁用启动功能');
-            } else {
-                // ST 目录存在，确保按钮可用
-                const startBtn = document.getElementById('startBtn');
-                const restartBtn = document.getElementById('restartBtn');
-                if (startBtn) {
-                    startBtn.disabled = false;
-                    startBtn.title = '';
-                }
-                if (restartBtn) {
-                    restartBtn.disabled = false;
-                    restartBtn.title = '';
-                }
+                // 延迟跳转，让用户看到提示
+                setTimeout(() => {
+                    window.location.href = '/setup.html';
+                }, 2000);
+                
+                return; // 提前返回，不继续处理其他逻辑
+            }
+            
+            // ST 已正确安装，确保按钮可用
+            const startBtn = document.getElementById('startBtn');
+            const restartBtn = document.getElementById('restartBtn');
+            if (startBtn) {
+                startBtn.disabled = false;
+                startBtn.title = '';
+            }
+            if (restartBtn) {
+                restartBtn.disabled = false;
+                restartBtn.title = '';
             }
             
             // 创建链接点击处理函数
