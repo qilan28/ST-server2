@@ -24,21 +24,12 @@ export function generateAccessUrl(username, port) {
         mainUrl = `http://localhost:${port}`;
     }
     
-    // 添加内网IP访问地址
+    // 添加内网IP访问地址 - 内网访问始终使用用户的直接端口
     try {
         const localIP = getLocalNetworkIP();
         if (localIP) {
-            const nginxConfig = getNginxConfig();
-            let localUrl;
-            
-            if (nginxConfig.enabled) {
-                // Nginx 模式：使用内网IP + Nginx端口 + 路径
-                const portPart = nginxConfig.port === 80 ? '' : `:${nginxConfig.port}`;
-                localUrl = `http://${localIP}${portPart}/${username}/st/`;
-            } else {
-                // 直接端口模式：使用内网IP + 用户端口
-                localUrl = `http://${localIP}:${port}`;
-            }
+            // 内网访问直接使用用户端口，不通过 Nginx 代理
+            const localUrl = `http://${localIP}:${port}`;
             
             alternativeUrls.push({
                 url: localUrl,
