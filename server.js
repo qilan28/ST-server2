@@ -25,6 +25,7 @@ import { findUserByUsername, createAdminUser } from './database.js';
 import { getAdminConfig, clearAdminPassword } from './utils/config-manager.js';
 import { startAutoBackupScheduler, stopAutoBackupScheduler } from './services/auto-backup.js';
 import { initRuntimeLimiter, stopRuntimeLimitCheck } from './runtime-limiter.js';
+import { getLocalNetworkIP, getAllLocalNetworkIPs } from './utils/network-helper.js';
 
 // 加载环境变量
 dotenv.config();
@@ -131,6 +132,28 @@ async function startServer() {
             console.log('SillyTavern Multi-Instance Manager');
             console.log('='.repeat(60));
             console.log(`Server running on http://localhost:${PORT}`);
+            
+            // 显示内网IP访问地址
+            try {
+                const localIP = getLocalNetworkIP();
+                if (localIP) {
+                    console.log(`Local Network: http://${localIP}:${PORT}`);
+                } else {
+                    console.log('Local Network: IP not detected');
+                }
+                
+                // 显示所有可用的内网IP（用于调试）
+                const allIPs = getAllLocalNetworkIPs();
+                if (allIPs.length > 1) {
+                    console.log('Available IPs:');
+                    allIPs.forEach(({ ip, interface: interfaceName }) => {
+                        console.log(`  - ${ip} (${interfaceName})`);
+                    });
+                }
+            } catch (error) {
+                console.log('Local Network: Failed to detect IP');
+            }
+            
             console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
             console.log(`Database: ${path.join(__dirname, 'database.sqlite')}`);
             console.log('='.repeat(60));

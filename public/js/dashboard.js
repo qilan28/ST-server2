@@ -391,11 +391,22 @@ async function loadUserInfo() {
                     const linkContainer = document.createElement('div');
                     linkContainer.className = 'alternative-url-item';
                     
-                    // 添加服务器状态标记
+                    // 添加服务器状态标记和标签
                     if (!isOldFormat) {
                         const statusBadge = document.createElement('span');
                         statusBadge.className = isActive ? 'server-status active' : 'server-status inactive';
-                        statusBadge.textContent = isActive ? '• 已启用' : '• 未启用';
+                        
+                        // 根据类型显示不同的状态标记
+                        let statusText = '';
+                        if (urlInfo.type === 'local-network') {
+                            statusText = `• ${urlInfo.label || '内网访问'}`;
+                        } else if (urlInfo.type === 'forwarding-server') {
+                            statusText = isActive ? `• ${urlInfo.label || '转发服务器'}` : `• ${urlInfo.label || '转发服务器'} (未启用)`;
+                        } else {
+                            statusText = isActive ? '• 已启用' : '• 未启用';
+                        }
+                        
+                        statusBadge.textContent = statusText;
                         linkContainer.appendChild(statusBadge);
                     }
                     

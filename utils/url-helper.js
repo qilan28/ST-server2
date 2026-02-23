@@ -1,5 +1,6 @@
 import { getNginxConfig } from './config-manager.js';
 import { getForwardingConfig, getAllForwardingServers } from '../database-instance-forwarding.js';
+import { getLocalNetworkIP } from './network-helper.js';
 
 /**
  * 生成用户的 SillyTavern 访问地址
@@ -23,6 +24,33 @@ export function generateAccessUrl(username, port) {
         mainUrl = `http://localhost:${port}`;
     }
     
+    // 添加内网IP访问地址
+    try {
+        const localIP = getLocalNetworkIP();
+        if (localIP) {
+            const nginxConfig = getNginxConfig();
+            let localUrl;
+            
+            if (nginxConfig.enabled) {
+                // Nginx 模式：使用内网IP + Nginx端口 + 路径
+                const portPart = nginxConfig.port === 80 ? '' : `:${nginxConfig.port}`;
+                localUrl = `http://${localIP}${portPart}/${username}/st/`;
+            } else {
+                // 直接端口模式：使用内网IP + 用户端口
+                localUrl = `http://${localIP}:${port}`;
+            }
+            
+            alternativeUrls.push({
+                url: localUrl,
+                isActive: true,
+                type: 'local-network',
+                label: '内网访问'
+            });
+        }
+    } catch (error) {
+        console.error('获取内网IP失败:', error.message);
+    }
+    
     // 获取转发服务器地址作为备用地址，仅用于显示
     try {
         // 获取所有转发服务器列表，包括非活跃的
@@ -40,7 +68,9 @@ export function generateAccessUrl(username, port) {
                 alternativeUrls.push({
                     url: backupUrl,
                     isActive: server.is_active === 1,
-                    serverId: server.id
+                    serverId: server.id,
+                    type: 'forwarding-server',
+                    label: '转发服务器'
                 });
             });
         }
