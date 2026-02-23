@@ -18,12 +18,35 @@ const router = express.Router();
 router.use(authenticateToken);
 
 // 获取当前用户信息
-router.get('/info', (req, res) => {
+router.get('/info', async (req, res) => {
     try {
         const user = findUserByUsername(req.user.username);
         
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
+        }
+        
+        // 检查 SillyTavern 目录是否存在
+        let stDirectoryExists = false;
+        let actualSetupStatus = user.st_setup_status;
+        
+        if (user.st_dir && user.st_setup_status === 'completed') {
+            try {
+                stDirectoryExists = fs.existsSync(user.st_dir);
+                
+                // 如果目录不存在但状态是completed，更新状态为failed
+                if (!stDirectoryExists) {
+                    console.warn(`[Info] 用户 ${user.username} 的ST目录不存在: ${user.st_dir}`);
+                    actualSetupStatus = 'failed';
+                    
+                    // 更新数据库中的状态
+                    const { updateSTSetupStatus } = await import('../database.js');
+                    updateSTSetupStatus(user.username, 'failed');
+                }
+            } catch (error) {
+                console.error(`[Info] 检查ST目录时出错:`, error);
+                stDirectoryExists = false;
+            }
         }
         
         // 获取多访问地址数据
@@ -39,7 +62,8 @@ router.get('/info', (req, res) => {
             dataDir: user.data_dir,
             stDir: user.st_dir,
             stVersion: user.st_version,
-            stSetupStatus: user.st_setup_status,
+            stSetupStatus: actualSetupStatus,  // 使用实际检查后的状态
+            stDirectoryExists: stDirectoryExists,  // 新增字段
             status: user.status,
             createdAt: user.created_at,
             accessUrl: accessUrlData.mainUrl,     // 主访问地址

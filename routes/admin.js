@@ -130,6 +130,15 @@ router.post('/users/:username/start', async (req, res) => {
             return res.status(400).json({ error: 'SillyTavern not set up for this user' });
         }
         
+        // 检查ST目录是否存在
+        if (!fs.existsSync(user.st_dir)) {
+            console.error(`[Admin] ST目录不存在: ${user.st_dir}`);
+            return res.status(400).json({ 
+                error: 'SillyTavern directory does not exist. Please reinstall.',
+                setup_status: 'failed'
+            });
+        }
+        
         const result = await startInstance(user.username, user.port, user.st_dir, user.data_dir);
         
         // 返回实际使用的端口

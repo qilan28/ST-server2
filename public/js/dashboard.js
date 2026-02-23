@@ -422,6 +422,49 @@ async function loadUserInfo() {
                 });
             }
             
+            // 检查 SillyTavern 目录是否存在
+            if (data.stSetupStatus === 'completed' && data.stDirectoryExists === false) {
+                // ST 目录不存在，显示警告和重新安装按钮
+                const warningMessage = document.createElement('div');
+                warningMessage.className = 'message error';
+                warningMessage.style.marginTop = '15px';
+                warningMessage.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span>⚠️ SillyTavern 目录不存在，需要重新安装</span>
+                        <button class="btn btn-primary btn-sm" onclick="goToSetup()" style="margin-left: 10px;">
+                            🔧 重新安装
+                        </button>
+                    </div>
+                `;
+                alternativeUrlsContainer.appendChild(warningMessage);
+                
+                // 禁用启动相关按钮
+                const startBtn = document.getElementById('startBtn');
+                const restartBtn = document.getElementById('restartBtn');
+                if (startBtn) {
+                    startBtn.disabled = true;
+                    startBtn.title = 'SillyTavern 目录不存在，请重新安装';
+                }
+                if (restartBtn) {
+                    restartBtn.disabled = true;
+                    restartBtn.title = 'SillyTavern 目录不存在，请重新安装';
+                }
+                
+                console.warn('[Dashboard] ST目录不存在，已禁用启动功能');
+            } else {
+                // ST 目录存在，确保按钮可用
+                const startBtn = document.getElementById('startBtn');
+                const restartBtn = document.getElementById('restartBtn');
+                if (startBtn) {
+                    startBtn.disabled = false;
+                    startBtn.title = '';
+                }
+                if (restartBtn) {
+                    restartBtn.disabled = false;
+                    restartBtn.title = '';
+                }
+            }
+            
             // 创建链接点击处理函数
             function createUrlClickHandler(url) {
                 return function(e) {
@@ -574,6 +617,23 @@ async function handleStart() {
             startFastStatusCheck();
         } else {
             console.error('[Instance] 启动失败:', data);
+            
+            // 特别处理 SillyTavern 目录不存在的错误
+            if (data.error && data.error.includes('SillyTavern directory does not exist')) {
+                const confirmed = await showConfirm(
+                    'SillyTavern 目录不存在，需要重新安装。是否现在前往版本选择页面？',
+                    '重新安装 SillyTavern',
+                    '前往安装',
+                    '取消'
+                );
+                
+                if (confirmed) {
+                    console.log('[Instance] 用户选择重新安装，跳转到版本选择页面');
+                    window.location.href = '/setup.html';
+                    return;
+                }
+            }
+            
             showMessage(data.error || '启动失败，服务器返回错误');
         }
     } catch (error) {
@@ -695,6 +755,23 @@ async function handleRestart() {
             await loadInstanceStatus();
         } else {
             console.error('[Instance] 重启失败:', data);
+            
+            // 特别处理 SillyTavern 目录不存在的错误
+            if (data.error && data.error.includes('SillyTavern directory does not exist')) {
+                const confirmed = await showConfirm(
+                    'SillyTavern 目录不存在，需要重新安装。是否现在前往版本选择页面？',
+                    '重新安装 SillyTavern',
+                    '前往安装',
+                    '取消'
+                );
+                
+                if (confirmed) {
+                    console.log('[Instance] 用户选择重新安装，跳转到版本选择页面');
+                    window.location.href = '/setup.html';
+                    return;
+                }
+            }
+            
             showMessage(data.error || '重启失败，服务器返回错误');
         }
     } catch (error) {
@@ -1933,6 +2010,12 @@ function addRestoreLog(message, type = 'info') {
     
     // 自动滚动到底部
     logsDiv.scrollTop = logsDiv.scrollHeight;
+}
+
+// 跳转到版本选择页面
+function goToSetup() {
+    console.log('[Dashboard] 用户选择重新安装，跳转到版本选择页面');
+    window.location.href = '/setup.html';
 }
 
 // 页面加载完成后初始化
