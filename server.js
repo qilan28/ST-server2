@@ -19,6 +19,7 @@ import siteSettingsRoutes from './routes/site-settings.js';
 import friendsRoutes from './routes/friends.js';
 import runtimeLimiterRoutes from './routes/runtime-limiter.js';
 import instanceForwardingRoutes from './routes/instance-forwarding.js';
+import instanceProxyRoutes from './routes/instance-proxy.js';
 import { protectPage } from './middleware/page-auth.js';
 import './database.js';
 import { findUserByUsername, createAdminUser } from './database.js';
@@ -206,6 +207,10 @@ app.use('/api/proxy', proxyRoutes);
 app.use('/api/site-settings', siteSettingsRoutes);
 app.use('/api/runtime-limit', runtimeLimiterRoutes);
 app.use('/api/instance-forwarding', instanceForwardingRoutes);
+
+// ST实例代理路由（放在友情链接路由之前，避免路径冲突）
+app.use('/', instanceProxyRoutes);
+
 app.use('/', friendsRoutes); // 友情链接路由（包含公开和管理员路由）
 
 // 健康检查
