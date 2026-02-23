@@ -16,7 +16,6 @@
     "fix-site-settings": "node scripts/fix-site-settings.js",
     "set-default-favicon": "node scripts/set-default-favicon.js",
     "generate-nginx": "node scripts/generate-nginx-config.js",
-    "generate-unified-nginx": "node scripts/generate-unified-nginx-config.js",
     "fix-nginx-title": "node scripts/auto-fix-nginx-title.js",
     "deploy-nginx": "sudo bash scripts/deploy-nginx.sh",
     "start-nginx": "sudo bash scripts/start-nginx-standalone.sh",
@@ -29,9 +28,7 @@
     "fix-instances": "node reset-instances.js",
     "ensure-nginx": "node scripts/ensure-nginx-config.js",
     "fix-nginx-duplicate": "node fix-nginx-duplicate.js",
-    "check-nginx": "node scripts/check-nginx-config.js",
-    "diagnose-proxy": "node scripts/diagnose-proxy-issue.js",
-    "check-startup": "node scripts/check-startup-progress.js"
+    "check-nginx": "node scripts/check-nginx-config.js"
   },
   "keywords": [
     "sillytavern",
@@ -58,7 +55,6 @@
     "extract-zip": "^2.0.1",
     "node-cron": "^3.0.3",
     "node-fetch": "^3.3.2",
-    "multer": "^1.4.5-lts.1",
-    "http-proxy-middleware": "^2.0.6"
+    "multer": "^1.4.5-lts.1"
   }
 }
