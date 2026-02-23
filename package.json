@@ -29,7 +29,9 @@
     "fix-instances": "node reset-instances.js",
     "ensure-nginx": "node scripts/ensure-nginx-config.js",
     "fix-nginx-duplicate": "node fix-nginx-duplicate.js",
-    "check-nginx": "node scripts/check-nginx-config.js"
+    "check-nginx": "node scripts/check-nginx-config.js",
+    "diagnose-proxy": "node scripts/diagnose-proxy-issue.js",
+    "check-startup": "node scripts/check-startup-progress.js"
   },
   "keywords": [
     "sillytavern",
